@@ -40,16 +40,11 @@ WORKDIR /usr/local/src
 RUN curl -sL https://github.com/PixarAnimationStudios/USD/archive/v${VERSION}.tar.gz \
     | tar -xz --strip-components=1
 
-# COPY build_usd.py .
 RUN GEN_DIR=${GEN_DIR:-$(mktemp -d)} \
     && mkdir -vp ${GEN_DIR}/{build,src} \
     && python build_scripts/build_usd.py -v --build ${GEN_DIR}/build --src ${GEN_DIR}/src ${INSTALL_DIR}
 
 # Re-locate required libraries and Python packages
-# RUN cp -rv /usr/lib64/python2.7/site-packages/PySide ${INSTALL_DIR}/lib/python/ \
-    # && cp -rv /usr/lib/python2.7/site-packages/OpenGL ${INSTALL_DIR}/lib/python/
-RUN cp -v \
-        /usr/lib64/libQt*.so.4* \
-        /usr/lib64/libGL*.so* \
-    ${INSTALL_DIR}/lib/
+RUN cp -v /usr/lib64/libQt*.so.4* ${INSTALL_DIR}/lib/python/PySide/
+RUN cp -v /usr/lib64/libGL*.so* ${INSTALL_DIR}/lib/
 
