@@ -1,0 +1,6 @@
+/build/
+*.py[co]
+
+# IDEs
+/.vscode
+/.idea

@@ -1,0 +1,49 @@
+name: CI
+on: push
+
+
+jobs:
+  black:
+    name: Black formatted
+    runs-on: ubuntu-latest
+    steps:
+     - uses: actions/checkout@v2
+     - uses: actions/setup-python@v1
+       with:
+         python-version: 3.7
+     - name: Check all Python files
+       run: |
+         pip install black
+         git ls-files -z | grep -z '\.py$' | xargs -0r black
+         git diff --color=always --exit-code
+
+  install:
+    name: Install as rez package (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: [2.7]  # [2.7, 3.7] needs setup-rez to be fixed
+        include:
+          - python: 2.7
+            variant: 0
+    container:
+        image: centos:7
+
+    steps:
+    - uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python }}
+
+    - uses: j0yu/setup-rez@v1
+    - uses: actions/checkout@v2
+
+    - name: Setup yum assumeyes, sudo and docker
+      run: |
+        echo "assumeyes=1" >> /etc/yum.conf
+        yum install sudo
+        curl -L https://get.docker.com/ | bash -s
+
+    - run: rez build --install --variants ${{ matrix.variant }}
+    - run: rez env usd -- command -v sdfdump
+
